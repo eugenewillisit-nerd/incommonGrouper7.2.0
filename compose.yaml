@@ -1,0 +1,63 @@
+# compose.yaml
+# Designed by Eugene Willis
+services:
+  postgres:
+    container_name: grouper-postgres
+    image: docker.io/postgres:15-alpine
+    networks:
+      - "$exampename-network"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "$exampename"
+      POSTGRES_USER: "$exampename"
+      POSTGRES_PASSWORD: ""$exampepassword"
+
+  grouper-ui:
+    container_name: grouper-ui
+    image: docker.io/i2incommon/grouper:7.2.0
+    command: ui
+    networks:
+      - $exampename-network
+    ports:
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /opt/grouperContainer/logs/grouper-ui-logs:/opt/grouper/logs
+      - /opt/grouperContainer/slashRoot:/opt/grouper/slashRoot
+    depends_on:
+      - postgres
+
+  grouper-ws:
+    container_name: grouper-ws
+    image: docker.io/i2incommon/grouper:7.2.0
+    command: ws
+    networks:
+      - $exampename-network
+    ports:
+      - "8443:8443"
+     volumes:
+      - /opt/grouperContainer/logs/grouper-ws-logs:/opt/grouper/logs
+      - /opt/grouperContainer/slashRoot:/opt/grouper/slashRoot
+    depends_on:
+      - postgres
+
+  grouper-daemon:
+    container_name: grouper-daemon
+    image: docker.io/i2incommon/grouper:7.2.0
+    command: daemon
+    networks:
+      - grouper-net
+    volumes:
+      - /opt/grouperContainer/logs/grouper-daemon-logs:/opt/grouper/logs
+      - /opt/grouperContainer/slashRoot:/opt/grouper/slashRoot
+    depends_on:
+      - postgres
+
+networks:
+  grouper-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+
